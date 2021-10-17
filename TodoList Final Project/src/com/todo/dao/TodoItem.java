@@ -12,6 +12,7 @@ public class TodoItem {
     private int comp;
     private int number;
     private int impt;
+    private int multi;
 
     public TodoItem(String title, String desc, String category, String due_date){
         this.title=title;
@@ -40,6 +41,18 @@ public class TodoItem {
         this.due_date=due_date;
         this.comp=comp;
         this.impt=impt;
+        SimpleDateFormat f = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
+        this.current_date = f.format(new Date());
+    }
+	
+	public TodoItem(String title, String desc, String category, String due_date, int comp, int impt, int multi){
+        this.title=title;
+        this.desc=desc;
+        this.category=category;
+        this.due_date=due_date;
+        this.comp=comp;
+        this.impt=impt;
+        this.multi=multi;
         SimpleDateFormat f = new SimpleDateFormat("yyyy/MM/dd kk:mm:ss");
         this.current_date = f.format(new Date());
     }
@@ -106,10 +119,14 @@ public class TodoItem {
     
     @Override
     public String toString() {
-    	if (this.comp == 1 && this.impt == 1) return "*[" + category + "]" + " " + title + "[V]" + " - " + desc + " - " + due_date + " - " + current_date;
-    	else if (this.comp == 1 && this.impt == 0) return "[" + category + "]" + " " + title + "[V]" + " - " + desc + " - " + due_date + " - " + current_date;
-    	else if (this.comp == 0 && this.impt == 1) return "*[" + category + "]" + " " + title + " - " + desc + " - " + due_date + " - " + current_date;
-    	else return "[" + category + "]" + " " + title + " - " + desc + " - " + due_date + " - " + current_date;
+    	if (this.comp == 1 && this.impt == 1 && this.multi == 1) return number + ". " + "[V]*[" + category + "]" + " " + title + "(팀플) - " + desc + " - " + due_date + " - " + current_date;
+    	else if (this.comp == 1 && this.impt == 0 && this.multi == 0) return number + ". " + "[V][" + category + "]" + " " + title + " - " + desc + " - " + due_date + " - " + current_date;
+    	else if (this.comp == 0 && this.impt == 1 && this.multi == 0) return number + ". " + "*[" + category + "]" + " " + title + " - " + desc + " - " + due_date + " - " + current_date;
+    	else if (this.comp == 0 && this.impt == 0 && this.multi == 1) return number + ". " + "[" + category + "]" + " " + title + "(팀플) - " + desc + " - " + due_date + " - " + current_date;
+    	else if (this.comp == 0 && this.impt == 1 && this.multi == 1) return number + ". " + "*[" + category + "]" + " " + title + "(팀플) - " + desc + " - " + due_date + " - " + current_date;
+    	else if (this.comp == 1 && this.impt == 1 && this.multi == 0) return number + ". " + "[V]*[" + category + "]" + " " + title + " - " + desc + " - " + due_date + " - " + current_date;
+    	else if (this.comp == 1 && this.impt == 0 && this.multi == 1) return number + ". " + "[V][" + category + "]" + " " + title + "(팀플) - " + desc + " - " + due_date + " - " + current_date;
+    	else return number + ". " + "[" + category + "]" + " " + title + " - " + desc + " - " + due_date + " - " + current_date;
     }
     
     public String findString() {
@@ -121,5 +138,12 @@ public class TodoItem {
     }
 	public void setIsImpt(int impt) {
 		this.impt = impt;
+	}
+	
+	public int getIsMulti() {
+    	return multi;
+    }
+	public void setIsMulti(int multi) {
+		this.multi = multi;
 	}
 }

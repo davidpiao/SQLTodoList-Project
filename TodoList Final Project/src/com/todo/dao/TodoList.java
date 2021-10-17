@@ -1,6 +1,8 @@
 package com.todo.dao;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import com.google.gson.Gson;
 import com.todo.service.DBconnect;
 
 public class TodoList {
@@ -93,8 +96,23 @@ public class TodoList {
 	      return count;
 	   }
 
-	   public int deleteItem(int index) {
-	      String sql = "delete from list where id=?;";
+   public int deleteItem(int index) {
+      String sql = "delete from list where id=?;";
+      PreparedStatement pstmt;
+      int count=0;
+      try {
+         pstmt = conn.prepareStatement(sql);
+         pstmt.setInt(1, index);
+         count = pstmt.executeUpdate();
+         pstmt.close();
+      } catch (SQLException e) {
+         e.printStackTrace();
+      }
+      return count;
+   }
+   
+   public int deleteCheckedItem(int index) {
+	      String sql = "delete from list where is_complete=1;";
 	      PreparedStatement pstmt;
 	      int count=0;
 	      try {
@@ -123,7 +141,9 @@ public class TodoList {
             String due_date = rs.getString("due_date");
             String current_date = rs.getString("current_date");
             int comp = rs.getInt("is_completed");
-            TodoItem t = new TodoItem(title, description, category, due_date, comp);
+            int impt = rs.getInt("is_important");
+            int multi = rs.getInt("is_multi");
+            TodoItem t = new TodoItem(title, description, category, due_date, comp, impt, multi);
             t.setNumber(id);
             t.setCurrent_date(current_date);
             list.add(t);
@@ -167,12 +187,12 @@ public class TodoList {
 	      }
 		return list;
 	   }
-	   
+
 	   public ArrayList<TodoItem> getListCategory(String keyword) {
 		   ArrayList<TodoItem> list = new ArrayList<TodoItem>();
 		   PreparedStatement pstmt;
 		   try {
-			   String sql = "SELECT * FROM list WHERE CATEGORY = ?";
+			   String sql = "SELECT * FROM list INNER JOIN category ON list.category = category.category";
 			   pstmt = conn.prepareStatement(sql);
 			   pstmt.setString(1, keyword);
 			   ResultSet rs = pstmt.executeQuery();
@@ -336,4 +356,49 @@ public class TodoList {
 		}
 		return list;
 	}
+	public int multi(int multi) {
+		String sql = "update list set is_multi = 1 " + "where id = " + multi;
+		PreparedStatement pstmt;
+		int count = 0;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			count = pstmt.executeUpdate();
+			pstmt.close();
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return count;
+	}
+	
+	public ArrayList<TodoItem> getMultiList() {
+		ArrayList<TodoItem> list = new ArrayList<TodoItem>();
+		Statement stmt;
+		try {
+			stmt = conn.createStatement();
+			String sql = "SELECT * FROM list WHERE is_multi == 1;";
+			ResultSet rs = stmt.executeQuery(sql);
+			while(rs.next()) {
+				int id = rs.getInt("id");
+				String category = rs.getString("category");
+				String title = rs.getString("title");
+				String description = rs.getString("memo");
+				String due_date = rs.getString("due_date");
+				String current_date = rs.getString("current_date");
+				int is_completed = rs.getInt("is_completed");
+				int is_important = rs.getInt("is_important");
+				int is_multi = rs.getInt("is_multi");
+				TodoItem t = new TodoItem(title, description, category, due_date);
+				t.setNumber(id);
+				t.setIsComp(is_completed);
+				t.setIsImpt(is_important);
+				t.setIsMulti(is_multi);
+				list.add(t);
+			}
+			stmt.close();
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+
 }

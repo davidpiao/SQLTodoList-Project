@@ -1,4 +1,7 @@
 package com.todo.menu;
+
+import com.todo.service.TodoUtil;
+
 public class Menu {
 
     public static void displaymenu()
@@ -11,8 +14,11 @@ public class Menu {
         System.out.println("comp - 아이템 완료 체크");
         System.out.println("ls - 모든 아이템 보기");
         System.out.println("ls_comp - 완료된 아이템 보기");
+        System.out.println("del_comp - 완료된 아이템 삭제");
         System.out.println("impt - 아이템 별표 체크");
         System.out.println("ls_impt - 중요한 아이템 보기");
+        System.out.println("multi - 아이템 팀플 체크");
+        System.out.println("ls_multi - 팀플 아이템 보기");
         System.out.println("find - 키워드 찾기");
         System.out.println("find_cate - 카테고리 찾기");
         System.out.println("ls_cate - 모든 카테고리 보기");
@@ -20,6 +26,8 @@ public class Menu {
         System.out.println("ls_name_desc - 이름 역순으로 보기");
         System.out.println("ls_date - 날짜순으로 보기");
         System.out.println("ls_date_desc - 날짜 역순으로 보기");
+        System.out.println("save_json - json 파일로 저장하기");
+        System.out.println("load_json - json 파일로 불러오기");
         System.out.println("exit - 프로그램 종료");
     }
     public static void prompt() {

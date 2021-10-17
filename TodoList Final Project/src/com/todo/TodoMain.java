@@ -14,6 +14,7 @@ public class TodoMain {
 		
 		boolean isList = false;
 		boolean quit = false;
+		TodoUtil.dueToday(l);
 		Menu.displaymenu();
 		do {
 			Menu.prompt();
@@ -27,7 +28,10 @@ public class TodoMain {
 			
 			case "del":
 				TodoUtil.deleteItem(l);
-				TodoUtil.saveList(l, "/Users/sungjinpark/Documents/springtools/workspace/TodoListSQLApp Project/todolist.txt");
+				break;
+				
+			case "del_comp":
+				TodoUtil.deleteItemChecked(l);
 				break;
 				
 			case "edit":
@@ -54,6 +58,15 @@ public class TodoMain {
 				
 			case "ls_impt":
 				TodoUtil.listImpt(l);
+				break;
+				
+			case "multi":
+				int multi = sc.nextInt();
+				TodoUtil.checkMulti(l, multi);
+				break;
+				
+			case "ls_multi":
+				TodoUtil.listMulti(l);
 				break;
 				
 			case "find":
@@ -90,13 +103,25 @@ public class TodoMain {
 				TodoUtil.listAll(l, "due_date", 0);
 				break;		
 				
+			case "save_json":
+				System.out.print("json 파일로 저장하시겠습니까? y/n > ");
+				String choices = sc.next();
+				if(choices.equalsIgnoreCase("y")) {
+					TodoUtil.GSONsave(l);
+					break;
+				}
+				else break;
+				
+			case "load_json":
+				TodoUtil.GSONload();
+				break;
+				
 			case "help":
 				Menu.displaymenu();
 				break;
 
 			case "exit":
-				TodoUtil.saveList(l, "todolist.txt");
-				System.out.println("Successfully saved in file.");
+				System.out.println("Goodbye!");
 				quit = true;
 				break;
 

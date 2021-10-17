@@ -6,55 +6,18 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import com.google.gson.Gson;
 
 import com.todo.dao.TodoItem;
 import com.todo.dao.TodoList;
 
 public class TodoUtil {
-	
-	public static void loadList(TodoList l, String filename) {
-		try {
-			BufferedReader in = new BufferedReader(new FileReader("/Users/sungjinpark/Documents/springtools/workspace/TodoListSQLApp Project/todolist.txt"));
-			String oneline;
-			while((oneline = in.readLine()) != null) {
-				StringTokenizer st = new StringTokenizer(oneline, "##");
-				//String impt = st.nextToken();
-				String category = st.nextToken();
-				String title = st.nextToken();
-				//String comp = st.nextToken();
-				String desc = st.nextToken();
-				String due_date = st.nextToken();
-				String current_date = st.nextToken();
-				
-				TodoItem t = new TodoItem(title, desc, category, due_date);
-				t.setCurrent_date(current_date);
-				if (l.isDuplicate(title)) {
-					return;
-				}
-				else 
-				l.addItem(t);
-			} in.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	public static void saveList(TodoList l, String filename) {
-		try {
-			Writer w = new FileWriter("todolist.txt");
-			for (TodoItem item : l.getList()) {
-				w.write(item.toSaveString());
-			}
-			w.close();
-			
-		}catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	public static void createItem(TodoList l) {
 		
 		String title, desc, category, due_date;
@@ -81,7 +44,7 @@ public class TodoUtil {
 				
 		TodoItem t = new TodoItem(title, desc, category, due_date);
 		if(l.addItem(t) > 0)
-			System.out.println("추가되었습니다.");
+			System.out.println("개 추가되었습니다.");
 	}
 
 	public static void deleteItem(TodoList l) {
@@ -94,6 +57,23 @@ public class TodoUtil {
 		if(l.deleteItem(index) > 0)
 			System.out.println("삭제되었습니다.");
 	}
+	
+	public static void deleteItemChecked(TodoList l) {
+		Scanner sc = new Scanner(System.in);
+	    int count = 0;
+	    for (TodoItem item : l.getList()) {
+	    	if(item.getIsComp() == 1) {
+	    		System.out.println(item.toString());
+		    	System.out.print("삭제를 원하시나요? y/n ");
+		    	String choice = sc.next();
+		    	if(choice.equalsIgnoreCase("y")) {     
+		    		 if (l.deleteItem(item.getNumber())>0)
+		    			 count++;
+		        	 }
+		    	}
+	    	}
+	    System.out.printf("\n총 %d개의 항목을 삭제했습니다.\n",count);
+	    }
 
 
 	public static void updateItem(TodoList l) {
@@ -109,14 +89,14 @@ public class TodoUtil {
 		new_title = sc.next();
 		
 		System.out.print("새 카테고리 > ");
-		new_category = sc.nextLine();
-		sc.nextLine();
+		new_category = sc.next();
+//		sc.nextLine();
 		
 		System.out.print("새 내용 > ");
-		new_desc = sc.nextLine();
+		new_desc = sc.next();
 		
 		System.out.print("새 마감일자  > ");
-		new_due_date = sc.nextLine();
+		new_due_date = sc.next();
 		
 		TodoItem t = new TodoItem(new_title, new_desc, new_category, new_due_date);
 		t.setNumber(index);
@@ -135,11 +115,10 @@ public class TodoUtil {
 	}
 	
 	public static void findCategory(TodoList l, String category) {
-		int count = 0, i = 0;
+		int count = 0;
 		for(TodoItem item : l.getList() ) {
-			i++;
 			if(item.getCategory().equals(category)) {
-				System.out.println((i+1) + ". " + item.toString());
+				System.out.println(item.toString());
 				count++;
 			}
 		}
@@ -168,7 +147,7 @@ public class TodoUtil {
 		
 		for (TodoItem item : l.getList()) {
 			i++;
-			System.out.println(i + ". " + item.toString());
+			System.out.println(item.toString());
 		}
 	}
 	public static void listCateAll(TodoList l) {
@@ -190,11 +169,9 @@ public class TodoUtil {
 	}
 	
 	public static void listAll(TodoList l, String orderby, int ordering) {
-		int i = 0;
 		System.out.printf("[전체 목록, 총 %d개]\n", l.getCount());
 		for (TodoItem item : l.getOrderedList(orderby, ordering)) {
-			i++;
-			System.out.println(i + ". " + item.toString());
+			System.out.println(item.toString());
 		}
 	}
 	
@@ -221,11 +198,74 @@ public class TodoUtil {
 		int count = 0;
 		for (TodoItem item : l.getImptList()) {
 			if(item.getIsImpt() == 1) {
+				System.out.println(item.toString());
+				count++;
+			}
+		}
+		System.out.printf("\n총 %d개의 항목이 별표로 표시되어있습니다.", count);
+	}
+	public static void checkMulti(TodoList l, int multi) {
+		if (l.multi(multi) > 0) System.out.println("멀티로 체크되었습니다.");				
+	}
+	
+	public static void listMulti(TodoList l) {
+		int count = 0;
+		for (TodoItem item : l.getMultiList()) {
+			if(item.getIsMulti() == 1) {
+				System.out.println(item.toString());
+				count++;
+			}
+		}
+		System.out.printf("\n총 %d개의 항목이 멀티로 체크되어있습니다.", count);
+	}
+	public static void GSONsave(TodoList l) {
+		Gson gson = new Gson();
+		
+		String jsonstr = gson.toJson(l.getList());
+		System.out.println(jsonstr);
+		
+		try {
+			FileWriter writer = new FileWriter("todolist2.txt");
+			writer.write(jsonstr);
+			writer.close();
+			System.out.println("파일 저장 완료!");
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	public static void GSONload() {
+		Gson gson = new Gson();
+		String jsonstr2 = null;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("todolist2.txt"));
+			jsonstr2 = br.readLine();
+			br.close();
+		}catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("파일에서 데이타 가져오기 성공!");
+		
+		TodoItem[] array = gson.fromJson(jsonstr2, TodoItem[].class);
+		List<TodoItem> list = Arrays.asList(array);
+		System.out.println("list1: " + list);
+	}
+	
+	public static void dueToday(TodoList l) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");  
+		LocalDateTime now = LocalDateTime.now();  
+		String current = dtf.format(now);
+		int count = 0;
+		//System.out.println(dtf.format(now));  
+		for (TodoItem item : l.getList()) {
+			if(item.getDue_date().equals(current)) {
 			System.out.println(item.toString());
 			count++;
 			}
 		}
-		System.out.printf("\n총 %d개의 항목이 별표로 표시되어있습니다.", count);
+		System.out.printf("\n위에 총 %d개의 항목이 오늘까지입니다. 어서 화이팅하세요!", count);
+		System.out.println("\n-------------------------------------------");
 	}
 }
 

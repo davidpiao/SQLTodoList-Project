@@ -90,12 +90,12 @@ public class TodoUtil {
 		
 		System.out.print("새 카테고리 > ");
 		new_category = sc.next();
-//		sc.nextLine();
 		
 		System.out.print("새 내용 > ");
 		new_desc = sc.next();
 		
 		System.out.print("새 마감일자  > ");
+		sc.next();
 		new_due_date = sc.next();
 		
 		TodoItem t = new TodoItem(new_title, new_desc, new_category, new_due_date);
